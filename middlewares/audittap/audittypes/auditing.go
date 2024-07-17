@@ -221,20 +221,27 @@ func (obs *AuditObfuscation) ObfuscateJSON(b []byte) ([]byte, error) {
 	return src, nil
 }
 
+/**
+* CDP-1377 - Update to retain the payload if there is sufficient space
+* Constraints provides the max size for the AuditEvent as well as a max size for the content payload
+* The content payload is the combination of the request and response payload
+* If these exceed the maximum allowed the request and response payload should be deleted and the audit data retained
+ */
 func enforcePrecedentConstraints(ev *AuditEvent, constraints AuditConstraints) {
+	// Get the size of the request payload
 	reqLen, _ := ev.RequestPayload[keyPayloadLength].(int) // Zero if not int or missing
 	lenRequest := int64(reqLen)
-	requestTooBig := lenRequest > constraints.MaxPayloadContentsLength
-	if lenRequest == 0 || requestTooBig {
-		delete(ev.RequestPayload, keyPayloadContents)
-		lenRequest = 0
-	}
-
+	// get the size of the response payload
 	respLen, _ := ev.ResponsePayload[keyPayloadLength].(int)
 	lenResponse := int64(respLen)
-	responseTooBig := lenResponse > constraints.MaxPayloadContentsLength
-	combinedTooBig := lenRequest+lenResponse > constraints.MaxPayloadContentsLength
-	if lenResponse == 0 || responseTooBig || combinedTooBig {
+
+	// combine and check size is less than the max content payload
+	combinedlength := lenRequest + lenResponse
+
+	// delete the request and response payloads if size exceeded
+	if combinedlength > constraints.MaxPayloadContentsLength {
+		// we don't want to keep part of the payload as this expected to be confusing to users so we maintain existing (previous) behaviour and remove both
+		delete(ev.RequestPayload, keyPayloadContents)
 		delete(ev.ResponsePayload, keyPayloadContents)
 	}
 }

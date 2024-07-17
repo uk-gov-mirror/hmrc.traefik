@@ -47,7 +47,7 @@ func NewAuditTap(config *configuration.AuditSink, streams []audittypes.AuditStre
 			return nil, err
 		}
 	} else {
-		maxAudit = 100000
+		maxAudit = 500000 // CDP-1377 this is the new default if not set, it is limited by the maximum audit allowed by Datastream
 	}
 
 	var maxPayload int64
@@ -56,7 +56,7 @@ func NewAuditTap(config *configuration.AuditSink, streams []audittypes.AuditStre
 			return nil, err
 		}
 	} else {
-		maxPayload = 96000
+		maxPayload = 492000 // todo #fixme CDP-1377 this is very niave assumption, it should be calculated dynamically (assuming no performance hit) in the meantime I've allowed 8KB
 	}
 
 	var th = maxAudit // Default the max recorded response length to the max audit size

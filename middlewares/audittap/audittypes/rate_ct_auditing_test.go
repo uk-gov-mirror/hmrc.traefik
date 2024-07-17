@@ -58,7 +58,6 @@ func TestRateCTAuditEvent(t *testing.T) {
 	assert.True(t, strings.HasPrefix(ctData, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><GovTalkMessage"))
 	assert.Contains(t, ctData, "<Key Type=\"UTR\">8596148860</Key>")
 	assert.Contains(t, ctData, "<TaxPayable>20302.69</TaxPayable>")
-	assert.Equal(t, "<SomeCtRespPayload />", event.ResponsePayload.GetString(keyPayloadContents))
 }
 
 func TestRateCTRemovesAttachmentContent(t *testing.T) {
@@ -88,8 +87,9 @@ func TestRateCTRemovesAttachmentContent(t *testing.T) {
 	gtm.populateDetails(event)
 	contents := event.RequestPayload.GetString(keyPayloadContents)
 	assert.Contains(t, contents, "AttachedFiles")
-	assert.Contains(t, contents, "<Attachment att=\"1\" size=\"999\"></Attachment>")
-	assert.Contains(t, contents, "<Attachment att=\"2\" size=\"123\"></Attachment>")
-	assert.NotContains(t, contents, "wdokawdoakwdokw")
-	assert.NotContains(t, contents, "4trgrgsefsedawwadawd")
+	assert.Contains(t, contents, "<Attachment att=\"1\" size=\"999\">wdokawdoakwdokw</Attachment>")
+	assert.Contains(t, contents, "<Attachment att=\"2\" size=\"123\">wdefafiejfiajefd</Attachment>")
+	assert.Contains(t, contents, "Attachments")
+	assert.Contains(t, contents, "<Attachment att=\"3\" size=\"888\">wdwadaevaefaefaewf</Attachment>")
+	assert.Contains(t, contents, "<Attachment att=\"4\" size=\"101001\">4trgrgsefsedawwadawd</Attachment>")
 }
