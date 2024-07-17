@@ -134,6 +134,7 @@ func TestResponseContentsOmittedWhenTooLong(t *testing.T) {
 }
 
 func TestResponseContentsOmittedWhenResponseAndRequestTooLong(t *testing.T) {
+	// CDP-1377 we evaluate the size of the combined (request+response) payload and remove if exceeds max payliad contents length
 	requestPayload := types.DataMap{"Key1": "AllowedRequestSize"}
 	max := 40
 	ev := AuditEvent{RequestPayload: types.DataMap{}, ResponsePayload: types.DataMap{}}
@@ -144,9 +145,10 @@ func TestResponseContentsOmittedWhenResponseAndRequestTooLong(t *testing.T) {
 	ev.ResponsePayload[keyPayloadLength] = (max / 2) + 1
 	enforcePrecedentConstraints(&ev, constraints)
 	assert.Nil(t, ev.ResponsePayload[keyPayloadContents])
-	assert.Equal(t, requestPayload, ev.RequestPayload[keyPayloadContents])
+	assert.Nil(t, ev.RequestPayload[keyPayloadContents])
 }
 
+// CDP-1377 if we only have a request payload is this retained
 func TestRequestContentsRetained(t *testing.T) {
 	max := 1000
 	contents := types.DataMap{"Key1": "MoreThan20Bytes"}
@@ -156,35 +158,38 @@ func TestRequestContentsRetained(t *testing.T) {
 	ev.RequestPayload[keyPayloadContents] = contents
 	ev.RequestPayload[keyPayloadLength] = max - 1
 	enforcePrecedentConstraints(&ev.AuditEvent, constraints)
+
 	assert.Equal(t, contents, ev.RequestPayload[keyPayloadContents])
 	assert.Nil(t, ev.ResponsePayload[keyPayloadContents])
 }
 
+// CDP-1377 if we only have a response payload is this retained
 func TestResponseContentsRetained(t *testing.T) {
 	max := 1000
 	contents := types.DataMap{"Key1": "MoreThan20Bytes"}
 	ev := RATEAuditEvent{}
 	ev.AuditEvent = AuditEvent{RequestPayload: types.DataMap{}, ResponsePayload: types.DataMap{}}
 	constraints := AuditConstraints{MaxAuditLength: 1000, MaxPayloadContentsLength: int64(max)}
-	ev.RequestPayload[keyPayloadLength] = max + 1
 	ev.ResponsePayload[keyPayloadContents] = contents
 	ev.ResponsePayload[keyPayloadLength] = max - 1
 	enforcePrecedentConstraints(&ev.AuditEvent, constraints)
-	assert.Nil(t, ev.RequestPayload[keyPayloadContents])
+
 	assert.Equal(t, contents, ev.ResponsePayload[keyPayloadContents])
+	assert.Nil(t, ev.RequestPayload[keyPayloadContents])
 }
 
 func TestResponseContentsRetained1M(t *testing.T) {
-	max := 10000
 	contents := types.DataMap{"Key1": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin quis viverra nulla. Nunc lacinia eget ante in lobortis. Cras sed quam egestas nibh tristique eleifend. Aenean eleifend quam sapien, eu convallis ante blandit et. Cras accumsan mi id leo consequat rhoncus. Donec dapibus leo nec augue commodo, varius posuere purus dignissim. Sed placerat nulla non vestibulum semper. Fusce leo mauris, feugiat nec mauris in, blandit commodo tellus. Mauris in lobortis turpis. Proin at ligula eget odio elementum dignissim eu vel mauris. Donec dui tortor, dapibus ac purus vel, sagittis tincidunt metus. Suspendisse nec dictum tellus.Nunc vel dolor eu neque tristique condimentum. Vivamus quis mauris urna. Proin tortor quam, pretium ac pellentesque accumsan, sagittis quis dui. Maecenas sit amet viverra est, et fermentum lacus. Aliquam eu eleifend metus. Nulla facilisi. Nulla auctor turpis vitae eros dapibus, ac fringilla quam tincidunt. Morbi efficitur mauris eu sagittis tempus. Aenean varius placerat nisi, id blandit risus ullamcorper in. Pellentesque libero lorem, tempus eget semper vel, rhoncus posuere erat. Sed tincidunt eros in lorem cursus viverra. Quisque a tristique mi. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Duis non velit orci.Pellentesque a auctor turpis, quis condimentum justo. Aliquam ut consequat felis. Quisque gravida accumsan lorem ac congue. Donec ultrices dolor in efficitur ultricies. Nulla ligula libero, venenatis in velit vel, aliquet vestibulum orci. Maecenas id mauris ligula. Suspendisse malesuada erat nec nulla semper, a dictum odio porttitor. Mauris id posuere lorem, ut congue augue. Nam porttitor risus eget dui ultrices ullamcorper nec nec augue. Proin vestibulum quam nisi, at tincidunt purus commodo non. Maecenas pretium augue non luctus iaculis. Suspendisse condimentum, arcu vel rhoncus laoreet, est metus efficitur justo, non blandit nibh neque sed purus. Sed interdum in nunc ut tincidunt. Suspendisse morbi."}
+
+	max := len(contents)
 	ev := RATEAuditEvent{}
 	ev.AuditEvent = AuditEvent{RequestPayload: types.DataMap{}, ResponsePayload: types.DataMap{}}
-	constraints := AuditConstraints{MaxAuditLength: int64(max), MaxPayloadContentsLength: int64(max-1)}
+	constraints := AuditConstraints{MaxAuditLength: int64(max*2), MaxPayloadContentsLength: int64(max*2)}
 
-	ev.RequestPayload[keyPayloadLength] = max + 1
+	ev.RequestPayload[keyPayloadLength] = max
 	ev.RequestPayload[keyPayloadContents] = contents
 
-	ev.ResponsePayload[keyPayloadLength] = max - 1
+	ev.ResponsePayload[keyPayloadLength] = max
 	ev.ResponsePayload[keyPayloadContents] = contents
 
 	enforcePrecedentConstraints(&ev.AuditEvent, constraints)
