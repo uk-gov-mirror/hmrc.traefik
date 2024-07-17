@@ -184,7 +184,7 @@ func TestResponseContentsRetained1M(t *testing.T) {
 	max := len(contents)
 	ev := RATEAuditEvent{}
 	ev.AuditEvent = AuditEvent{RequestPayload: types.DataMap{}, ResponsePayload: types.DataMap{}}
-	constraints := AuditConstraints{MaxAuditLength: int64(max*2), MaxPayloadContentsLength: int64(max*2)}
+	constraints := AuditConstraints{MaxAuditLength: int64(max * 2), MaxPayloadContentsLength: int64(max * 2)}
 
 	ev.RequestPayload[keyPayloadLength] = max
 	ev.RequestPayload[keyPayloadContents] = contents
