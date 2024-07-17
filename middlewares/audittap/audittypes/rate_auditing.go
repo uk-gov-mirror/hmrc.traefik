@@ -273,7 +273,8 @@ func (partial *partialGovTalkMessage) populateDetails(ev *RATEAuditEvent) {
 		if ev.RequestPayload == nil {
 			ev.RequestPayload = types.DataMap{}
 		}
-		xmlutils.EmptyAllElementOccurences(partial.Message.Root(), []string{"AttachedFiles", "Attachment"})
+		// CDP-1377 Committed out to allow attachments for Enhanced Preventative Risking
+		// xmlutils.EmptyAllElementOccurences(partial.Message.Root(), []string{"AttachedFiles", "Attachment"})
 		if msg, err := partial.Message.WriteToString(); err == nil {
 			trimmed := strings.TrimSpace(msg)
 			ev.addRequestPayloadContents(trimmed)

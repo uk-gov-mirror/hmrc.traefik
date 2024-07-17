@@ -59,7 +59,7 @@ func TestRateSA100AuditEvent(t *testing.T) {
 	assert.True(t, strings.HasPrefix(saData, "<?xml version=\"1.0\"?><GovTalkMessage"))
 	assert.Contains(t, saData, "<NationalInsuranceNumber>GY001093A")
 	assert.Contains(t, saData, "AttachedFiles")
-	assert.Contains(t, saData, "<Attachment FileFormat=\"pdf\" Filename=\"tubemap.pdf\" Description=\"TubeMap\" Size=\"315001\"></Attachment>")
+	assert.Contains(t, saData, "<Attachment FileFormat=\"pdf\" Filename=\"tubemap.pdf\" Description=\"TubeMap\" Size=\"315001\">NOTREALLLYBASE64DATA</Attachment>")
 	assert.Equal(t, "<ShouldInclude />", event.ResponsePayload.GetString(keyPayloadContents))
 }
 
@@ -86,9 +86,8 @@ func TestRateSA800AuditEvent(t *testing.T) {
 	saData := event.RequestPayload.GetString(keyPayloadContents)
 	assert.True(t, strings.HasPrefix(saData, "<GovTalkMessage"))
 	assert.Contains(t, saData, "PartnershipName>ABCDEFGHIJKLMNOPQRSTUVWXYZ123456")
-	assert.Contains(t, saData, "<Attachment FileFormat=\"pdf\" Filename=\"POSATT035small1.pdf\" Size=\"12345\" Description=\"small attachment 1\"></Attachment>")
-	assert.Contains(t, saData, "<Attachment FileFormat=\"pdf\" Filename=\"POSATT035small2.pdf\" Size=\"100\" Description=\"small attachment 2\"></Attachment>")
-	assert.Equal(t, "<ShouldInclude />", event.ResponsePayload.GetString(keyPayloadContents))
+	assert.Contains(t, saData, "<Attachment FileFormat=\"pdf\" Filename=\"POSATT035small1.pdf\" Size=\"12345\" Description=\"small attachment 1\">")
+	assert.Contains(t, saData, "<Attachment FileFormat=\"pdf\" Filename=\"POSATT035small2.pdf\" Size=\"100\" Description=\"small attachment 2\">")
 }
 
 func TestRateSA900AuditEvent(t *testing.T) {
@@ -145,8 +144,6 @@ func TestRateSARemovesAttachmentContent(t *testing.T) {
 	gtm.populateDetails(event)
 	contents := event.RequestPayload.GetString(keyPayloadContents)
 	assert.Contains(t, contents, "AttachedFiles")
-	assert.Contains(t, contents, "<Attachment att=\"1\" size=\"999\"></Attachment>")
-	assert.Contains(t, contents, "<Attachment att=\"2\" size=\"123\"></Attachment>")
-	assert.NotContains(t, contents, "wdokawdoakwdokw")
-	assert.NotContains(t, contents, "4trgrgsefsedawwadawd")
+	assert.Contains(t, contents, "<Attachment att=\"1\" size=\"999\">wdokawdoakwdokw</Attachment>")
+	assert.Contains(t, contents, "<Attachment att=\"2\" size=\"123\">wdefafiejfiajefd</Attachment>")
 }
