@@ -156,7 +156,7 @@ func gtmGetMessageParts(decoder *xml.Decoder, path string, message io.Reader) (*
 				if doc, err := xmlutils.ElementInnerToDocument(&se, decoder); err == nil {
 					partial.Header = doc
 					if el := doc.FindElementPath(gtmClass); el != nil {
-						isSubmission = auditsRequestPayloadContents(el.Text()) && path == "/submission"
+						isSubmission = auditsRequestPayloadContents(el.Text()) && strings.HasSuffix(path, "/submission")
 					}
 				}
 			} else if se.Name.Local == "GovTalkDetails" {
