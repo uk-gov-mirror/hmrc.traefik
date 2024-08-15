@@ -283,7 +283,16 @@ func (partial *partialGovTalkMessage) populateDetails(ev *RATEAuditEvent) {
 }
 
 func auditsRequestPayloadContents(auditType string) bool {
-	return strings.HasPrefix(auditType, "HMRC-SA-") || strings.HasPrefix(auditType, "HMRC-VAT-") || strings.HasPrefix(auditType, "HMRC-CT-")
+	return strings.HasPrefix(auditType, "HMRC-SA-") ||
+		strings.HasPrefix(auditType, "IR-AA-SA") ||
+		strings.HasPrefix(auditType, "HMRC-VAT-") ||
+		strings.HasPrefix(auditType, "HMRC-CT-") ||
+		strings.HasPrefix(auditType, "IR-AA-CT") ||
+		strings.HasPrefix(auditType, "IR-CTF-annnualReturn") ||
+		strings.HasPrefix(auditType, "HMRC-PAYE-") ||
+		strings.HasPrefix(auditType, "IR-PAYE-") ||
+		strings.HasPrefix(auditType, "HMRC-CHAR-CLM") ||
+		strings.HasPrefix(auditType, "HMRC-PP-PRAC-DEAUTH")
 }
 
 func extractMoneyValue(doc *etree.Document, path etree.Path) (float64, error) {
